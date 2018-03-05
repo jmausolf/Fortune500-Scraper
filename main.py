@@ -19,4 +19,4 @@ with open('fortune500-list.csv', 'w') as f:
             i += 1
             print ("[ " + str(i) + " ] - " + company["title"])
 
-            f.write("{}, {} \n".format(str(i), company["title"]))
+            f.write("{},{}\n".format(str(i), company["title"].strip()))
