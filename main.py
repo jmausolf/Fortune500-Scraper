@@ -1,22 +1,41 @@
 import json
+import re
 import httplib2
+import argparse
+
+def remove_non_ascii_2(text, sub=""):
+    import re
+    return re.sub(r'[^\x00-\x7F]+', sub, text)
 
 
-h = httplib2.Http(".cache")
+def getFortunelist(n=500):
 
-with open('fortune500-list.csv', 'w') as f:
-    i = 0
+    h = httplib2.Http(".cache")
 
-    f.write("rank,company\n")
+    with open('fortune{}-list.csv'.format(n), 'w') as f:
+        i = 0
 
-    while i < 500:
-        (resp_headers, content) = h.request("http://fortune.com/api/v2/list/2013055/expand/item/ranking/asc/" + str(i)
-                                            + "/100", "GET")
+        f.write("rank,company\n")
 
-        content = json.loads(content.decode('utf-8'))
+        while i < n:
+            (resp_headers, content) = h.request("http://fortune.com/api/v2/list/2013055/expand/item/ranking/asc/" + str(i)
+                                                + "/100", "GET")
 
-        for company in content["list-items"]:
-            i += 1
-            print ("[ " + str(i) + " ] - " + company["title"])
+            content = json.loads(content.decode('utf-8'))
 
-            f.write("{},{}\n".format(str(i), company["title"].strip()))
+            for company in content["list-items"]:
+                i += 1
+                print ("[ " + str(i) + " ] - " + company["title"])
+
+                f.write("{},{}\n".format(str(i), remove_non_ascii_2(company["title"].strip(), "'")))
+
+
+
+
+if __name__ == "__main__":
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-n", "--number", default=500, type=int, help="number of companies")
+    args = parser.parse_args()
+
+    getFortunelist(args.number)
